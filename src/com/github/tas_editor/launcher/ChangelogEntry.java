@@ -14,7 +14,7 @@ public class ChangelogEntry {
 			type = Type.valueOf(initString.split(":")[0].trim().toUpperCase());
 			text = Arrays.stream(initString.split(":")).skip(1).collect(Collectors.joining(":")).trim();
 		} catch(IllegalArgumentException e) { //doesn't match the format
-			System.out.println("didn't find type for "+initString.split(":")[0].trim());
+			System.err.println("didn't find type for "+initString.split(":")[0].trim());
 			type = null;
 			text = initString;
 		}
