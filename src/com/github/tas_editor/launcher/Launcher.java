@@ -28,6 +28,7 @@ import org.json.JSONObject;
 public class Launcher {
 
 	public static void main(String[] args) {
+		System.out.println("new version");
 		File updaterScript = new File("Launcher-updater.bat");
 		if(updaterScript.exists()) updaterScript.delete(); //clean up file from self-update
 		checkSelfUpdate(); //FIXME absolutely not tested yet
