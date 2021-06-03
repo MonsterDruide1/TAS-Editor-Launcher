@@ -149,6 +149,7 @@ public class Launcher {
 		JTextArea area = new JTextArea(changelog);
 		area.setLineWrap(true);
 		area.setWrapStyleWord(true);
+		area.setEditable(false);
 		JScrollPane pane = new JScrollPane(area);
 		pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		panel.add(pane, c);
@@ -173,6 +174,7 @@ public class Launcher {
 			changelogs.add(release.getString("body"));
 			id = release.getInt("id");
 		} while (id != startID);
+		changelogs.remove(changelogs.size()-1); //remove last, as it's the changelog for the already-installed version
 
 		// changelogs are now ordered new-to-old, meaning the most actual changelogs are
 		// in index 0
@@ -229,6 +231,7 @@ public class Launcher {
 		JTextArea area = new JTextArea(log);
 		area.setLineWrap(true);
 		area.setWrapStyleWord(true);
+		area.setEditable(false);
 		JScrollPane pane = new JScrollPane(area);
 		pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		panel.add(pane, c);
