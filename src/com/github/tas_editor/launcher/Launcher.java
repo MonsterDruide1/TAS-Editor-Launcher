@@ -65,6 +65,7 @@ public class Launcher {
 					new File(installDir+"/config").mkdirs();
 					preferencesFile = new File(installDir+"/config/launcher.xml");
 					preferencesFile.createNewFile();
+					Runtime.getRuntime().exec("explorer.exe \""+installDir.toString()+"\"");
 					prefs.exportSubtree(new FileOutputStream(preferencesFile));
 				} catch (URISyntaxException | IOException e) {
 					e.printStackTrace();
