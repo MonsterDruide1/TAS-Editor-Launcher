@@ -36,7 +36,7 @@ public class Launcher {
 	public static void main(String[] args) {
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if(args.length == 0) { //first start or just didn't start using the bat
-			if(!prefs.getBoolean("installed", false)) { //first start -> install
+			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)) { //first start -> install
 				try {
 					File ownFile = new File(
 							Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
@@ -49,6 +49,7 @@ public class Launcher {
 					Files.copy(ownFile.toPath(), Paths.get(installDir+"/bin/Launcher.jar"), StandardCopyOption.REPLACE_EXISTING);
 					new File(installDir+"/log").mkdirs();
 					writeLauncherBat(new File(installDir+"/Launcher.bat"));
+					prefs.putBoolean("justInstalled", true);
 				} catch (URISyntaxException | IOException e) {
 					e.printStackTrace();
 				}
@@ -56,6 +57,20 @@ public class Launcher {
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
 			return;
+		}
+		
+		if(prefs.getBoolean("justInstalled", false)) { //clean up original file
+			File possibleLocation1 = new File("../Launcher.jar");
+			File possibleLocation2 = new File("../../Launcher.jar");
+			if(possibleLocation1.exists())
+				possibleLocation1.delete();
+			else if(possibleLocation2.exists())
+				possibleLocation2.delete();
+			else
+				showMessageDialog("Could not locate original installation file. As the Launcher is fully installed, it is not required anymore, please delete it.", "Could not delete original file");
+				
+			prefs.remove("justInstalled");
+			prefs.putBoolean("installed", true);
 		}
 		
 		if (!args[0].equals(batFileID)) { // is used if the bat should be updated
