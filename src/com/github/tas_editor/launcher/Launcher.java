@@ -62,7 +62,7 @@ public class Launcher {
 		writer.close();
 		ProcessBuilder builder = new ProcessBuilder("cmd", "/C", "Launcher-updater.bat");
 		builder.start();
-		System.exit(0); //force exit if taskkill didn't do that yet 
+		System.exit(0); //force exit if taskkill didn't do that yet
 	}
 	
 	private GithubAPI api;
