@@ -45,6 +45,7 @@ public class Launcher {
 		else
 			Preferences.userRoot().node(Launcher.class.getName()).clear();
 		
+		System.out.println("new version!");
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if(args.length == 0) { //first start or just didn't start using the bat
 			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)) { //first start -> install
