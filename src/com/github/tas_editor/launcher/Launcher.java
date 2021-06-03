@@ -62,8 +62,7 @@ public class Launcher {
 		writer.flush();
 		writer.close();
 		Preferences.userRoot().node(Launcher.class.getName()).putInt("launcherID", id);
-		ProcessBuilder builder = new ProcessBuilder("cmd", "/C", "Launcher-updater.bat");
-		builder.start();
+		System.exit(3); //request update from underlying batch file
 	}
 	
 	private GithubAPI api;
