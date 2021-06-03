@@ -48,6 +48,7 @@ public class Launcher {
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if(args.length == 0) { //first start or just didn't start using the bat
 			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)) { //first start -> install
+				System.out.println("First start! Creating file structure...");
 				try {
 					File ownFile = new File(
 							Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
@@ -68,6 +69,7 @@ public class Launcher {
 				} catch (URISyntaxException | IOException e) {
 					e.printStackTrace();
 				}
+				System.out.println("Done installing!");
 			}
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
@@ -75,6 +77,7 @@ public class Launcher {
 		}
 		
 		if(prefs.getBoolean("justInstalled", false)) { //clean up original file
+			System.out.println("Second start. Clean up installation files...");
 			File possibleLocation1 = new File("Launcher.jar");
 			File possibleLocation2 = new File("../Launcher.jar");
 			if(possibleLocation1.exists())
@@ -87,9 +90,11 @@ public class Launcher {
 			prefs.remove("justInstalled");
 			prefs.putBoolean("installed", true);
 			prefs.exportSubtree(new FileOutputStream(preferencesFile));
+			System.out.println("Done cleaning up!");
 		}
 		
 		if (!args[0].equals(batFileID)) { // is used if the bat should be updated
+			System.out.println("Update the bat file...");
 			writeLauncherBat(new File("Launcher.bat"));
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
@@ -140,6 +145,7 @@ public class Launcher {
 			JSONObject latest = api.getLatestRelease();
 			int id = latest.getInt("id");
 			if (id != Preferences.userRoot().node(Launcher.class.getName()).getInt("launcherID", 0)) {
+				System.out.println("Performing selfUpdate...");
 				selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id, preferencesFile);
 			}
 		} catch (JSONException | IOException | URISyntaxException | BackingStoreException e) {
@@ -149,6 +155,7 @@ public class Launcher {
 
 	private static void selfUpdate(String fileURL, int id, File preferencesFile) throws MalformedURLException, IOException, URISyntaxException, BackingStoreException {
 		downloadUpdate(fileURL, new File("bin/Launcher-update.jar"));
+		System.out.println("Done downloading Launcher-update file. Writing updater script...");
 		File ownFileFile = new File(
 				Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 		String ownFile = ownFileFile.getName();
@@ -160,6 +167,7 @@ public class Launcher {
 		writer.close();
 		Preferences.userRoot().node(Launcher.class.getName()).putInt("launcherID", id);
 		prefs.exportSubtree(new FileOutputStream(preferencesFile));
+		System.out.println("Done. Restarting...");
 		System.exit(3); // request update from underlying batch file
 	}
 
@@ -174,8 +182,10 @@ public class Launcher {
 			JSONObject latestRelease = api.getLatestRelease();
 			int localID = prefs.getInt("latestID", 0);
 			if (localID != latestRelease.getInt("id") || !getEditorFile().exists()) {
+				System.out.println("Update for TAS-Editor available! Generating Changelog...");
 				String changelog = generateChangelog(localID);
 				displayChangelog(changelog);
+				System.out.println("Downloading update...");
 				downloadUpdate(latestRelease.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"),
 						getEditorFile());
 				prefs.putInt("latestID", latestRelease.getInt("id"));
@@ -247,14 +257,17 @@ public class Launcher {
 
 	public void launch() {
 		try {
+			System.out.println("Launching TAS-Editor...");
 			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/C", "java -jar " + getEditorFile().toString());
 			builder.directory(new File(System.getProperty("user.dir")));
 			builder.redirectErrorStream(true);
 			builder.redirectOutput(getLogFile());
 			Process process = builder.start();
+			System.out.println("Done! Waiting for crash/exit...");
 			if (process.waitFor() != 0) {
 				showCrashLog();
 			}
+			System.out.println("Exiting...");
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
