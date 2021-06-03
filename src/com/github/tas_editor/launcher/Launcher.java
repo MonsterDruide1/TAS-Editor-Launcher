@@ -34,7 +34,7 @@ public class Launcher {
 		if(args.length == 0 || !args[0].equals(batFileID)) { //is used if the bat should be updated
 			writeLauncherBat();
 			JOptionPane.showMessageDialog(new JFrame(), "Please restart the launcher using the bat file!");
-			return;
+			System.exit(0);
 		}
 		
 		File updaterScript = new File("Launcher-updater.bat");
