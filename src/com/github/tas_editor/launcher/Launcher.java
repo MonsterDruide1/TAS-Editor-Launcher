@@ -59,6 +59,7 @@ public class Launcher {
 					new File(installDir+"/log").mkdirs();
 					writeLauncherBat(new File(installDir+"/Launcher.bat"));
 					prefs.putBoolean("justInstalled", true);
+					new File(installDir+"/config").mkdirs();
 					preferencesFile = new File(installDir+"/config/launcher.xml");
 					preferencesFile.createNewFile();
 					prefs.exportSubtree(new FileOutputStream(preferencesFile));
