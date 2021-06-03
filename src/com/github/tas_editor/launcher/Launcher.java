@@ -52,7 +52,8 @@ public class Launcher {
 	
 	private static void selfUpdate(String fileURL) throws MalformedURLException, IOException, URISyntaxException {
 		downloadUpdate(fileURL, new File("Launcher-update.jar"));
-		String ownFile = Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+		File ownFileFile = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+		String ownFile = ownFileFile.getName();
 		PrintWriter writer = new PrintWriter(new File("Launcher-updater.bat"));
 		writer.write("taskkill /F /PID "+ProcessHandle.current().pid()+"\n"); //kill this process to modify the jar file
 		writer.write("move Launcher-update.jar "+ownFile+"\n"); //replace this jar file
