@@ -56,8 +56,8 @@ public class Launcher {
 		String ownFile = ownFileFile.getName();
 		PrintWriter writer = new PrintWriter(new File("Launcher-updater.bat"));
 		writer.write("taskkill /F /PID "+ProcessHandle.current().pid()+"\n"); //kill this process to modify the jar file
-		writer.write("move Launcher-update.jar "+ownFile+"\n"); //replace this jar file
-		writer.write("java -jar "+ownFile); //start the file up again
+		writer.write("move Launcher-update.jar \""+ownFile+"\"\n"); //replace this jar file
+		writer.write("java -jar \""+ownFile+"\""); //start the file up again
 		writer.flush();
 		writer.close();
 		ProcessBuilder builder = new ProcessBuilder("cmd", "/C", "Launcher-updater.bat");
