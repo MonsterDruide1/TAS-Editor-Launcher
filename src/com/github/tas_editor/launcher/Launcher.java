@@ -65,7 +65,7 @@ public class Launcher {
 		try {
 			PrintWriter pw = new PrintWriter(new File("Launcher.bat"));
 			pw.write("@ECHO OFF\n");
-			pw.write("start \"TAS-Editor-Launcher\" /MIN cmd /c \"java -jar Launcher.jar " + batFileID
+			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"java -jar Launcher.jar " + batFileID
 					+ " & if ERRORLEVEL 3 call Launcher-updater.bat\"");
 			pw.flush();
 			pw.close();
