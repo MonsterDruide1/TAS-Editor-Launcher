@@ -303,11 +303,11 @@ public class Launcher {
 	}
 
 	public File getEditorFile() {
-		return new File(prefs.get("EditorPath", "TAS-Editor.jar"));
+		return new File(prefs.get("EditorPath", "bin/TAS-Editor.jar"));
 	}
 
 	public File getLogFile() {
-		return new File(prefs.get("logfile", "log.txt"));
+		return new File(prefs.get("logfile", "log/log.txt"));
 	}
 
 }
