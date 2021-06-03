@@ -153,7 +153,7 @@ public class Launcher {
 		String ownFile = ownFileFile.getName();
 		PrintWriter writer = new PrintWriter(new File("bin/Launcher-updater.bat"));
 		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar file
-		writer.write("move bin/Launcher-update.jar \"bin/" + ownFile + "\"\n"); // replace this jar file
+		writer.write("move \""+ownFileFile.getParentFile().getAbsolutePath()+"/Launcher-update.jar\" \""+ownFileFile.getParentFile().getAbsolutePath()+"/" + ownFile + "\"\n"); // replace this jar file
 		writer.write("call Launcher.bat"); // start the file up again
 		writer.flush();
 		writer.close();
