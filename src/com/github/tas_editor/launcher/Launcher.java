@@ -97,7 +97,7 @@ public class Launcher {
 		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar
 																					// file
 		writer.write("move Launcher-update.jar \"" + ownFile + "\"\n"); // replace this jar file
-		writer.write("java -jar \"" + ownFile + "\""); // start the file up again
+		writer.write("call Launcher.bat"); // start the file up again
 		writer.flush();
 		writer.close();
 		Preferences.userRoot().node(Launcher.class.getName()).putInt("launcherID", id);
