@@ -39,7 +39,7 @@ public class Launcher {
 	private static Preferences prefs;
 
 	public static void main(String[] args) throws FileNotFoundException, IOException, InvalidPreferencesFormatException, BackingStoreException {
-		File preferencesFile = new File("../config/launcher.xml");
+		File preferencesFile = new File("../config/launcher.xml").getAbsoluteFile();
 		if(preferencesFile.exists())
 			Preferences.importPreferences(new FileInputStream(preferencesFile));
 		
