@@ -74,7 +74,7 @@ public class Launcher {
 		}
 		
 		if (!args[0].equals(batFileID)) { // is used if the bat should be updated
-			writeLauncherBat(new File("Launcher.bat"));
+			writeLauncherBat(new File("../Launcher.bat"));
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
 			return;
@@ -108,8 +108,8 @@ public class Launcher {
 		try {
 			PrintWriter pw = new PrintWriter(file);
 			pw.write("@ECHO OFF\n");
-			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"java -jar Launcher.jar " + batFileID
-					+ " & if ERRORLEVEL 3 call Launcher-updater.bat\"");
+			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"java -jar bin/Launcher.jar " + batFileID
+					+ " & if ERRORLEVEL 3 call bin/Launcher-updater.bat\"");
 			pw.flush();
 			pw.close();
 		} catch (IOException e) {
