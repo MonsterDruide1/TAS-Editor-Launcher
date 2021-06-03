@@ -46,7 +46,7 @@ public class Launcher {
 			Preferences.userRoot().node(Launcher.class.getName()).clear();
 		
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
-		if(args.length == 0) { //first start or just didn't start using the bat 
+		if(args.length == 0) { //first start or just didn't start using the bat
 			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)) { //first start -> install
 				System.out.println("First start! Creating file structure...");
 				try {
