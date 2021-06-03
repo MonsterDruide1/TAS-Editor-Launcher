@@ -123,8 +123,8 @@ public class Launcher {
 		try {
 			PrintWriter pw = new PrintWriter(file);
 			pw.write("@ECHO OFF\n");
-			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"java -jar bin/Launcher.jar " + batFileID
-					+ " & if ERRORLEVEL 3 call bin/Launcher-updater.bat\"");
+			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"cd bin & java -jar Launcher.jar " + batFileID
+					+ " & if ERRORLEVEL 3 call Launcher-updater.bat\"");
 			pw.flush();
 			pw.close();
 		} catch (IOException e) {
