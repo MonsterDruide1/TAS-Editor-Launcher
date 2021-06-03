@@ -77,7 +77,7 @@ public class Launcher {
 		try {
 			JSONObject latestRelease = api.getLatestRelease();
 			int localID = prefs.getInt("latestID", 0);
-			if(localID != latestRelease.getInt("id")) {
+			if(localID != latestRelease.getInt("id") || !getEditorFile().exists()) {
 				String changelog = generateChangelog(localID);
 				displayChangelog(changelog);
 				downloadUpdate(latestRelease.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), getEditorFile());
