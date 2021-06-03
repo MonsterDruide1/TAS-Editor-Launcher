@@ -43,7 +43,7 @@ public class Launcher {
 		if(preferencesFile.exists())
 			Preferences.importPreferences(new FileInputStream(preferencesFile));
 		else
-			Preferences.userRoot().clear();
+			Preferences.userRoot().node(Launcher.class.getName()).clear();
 		
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if(args.length == 0) { //first start or just didn't start using the bat
