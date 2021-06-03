@@ -154,7 +154,7 @@ public class Launcher {
 		PrintWriter writer = new PrintWriter(new File("bin/Launcher-updater.bat"));
 		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar file
 		writer.write("move bin/Launcher-update.jar \"" + ownFile + "\"\n"); // replace this jar file
-		writer.write("call bin/Launcher.bat"); // start the file up again
+		writer.write("call Launcher.bat"); // start the file up again
 		writer.flush();
 		writer.close();
 		Preferences.userRoot().node(Launcher.class.getName()).putInt("launcherID", id);
