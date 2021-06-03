@@ -36,7 +36,8 @@ public class Launcher {
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
 		}
-		System.err.println("PLEASE DO NOT CLOSE THIS WINDOW");
+		System.err.println("PLEASE DO NOT CLOSE THIS WINDOW - it is required to detect crashes of the TAS-Editor!");
+		System.err.println("-------------------------------------------------------------------------------------");
 
 		File updaterScript = new File("Launcher-updater.bat");
 		if (updaterScript.exists())
