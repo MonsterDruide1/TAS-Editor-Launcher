@@ -36,6 +36,7 @@ public class Launcher {
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
 		}
+		System.err.println("PLEASE DO NOT CLOSE THIS WINDOW");
 
 		File updaterScript = new File("Launcher-updater.bat");
 		if (updaterScript.exists())
