@@ -102,7 +102,7 @@ public class Launcher {
 		if (updaterScript.exists())
 			updaterScript.delete(); // clean up file from self-update
 
-		checkSelfUpdate();
+		checkSelfUpdate(preferencesFile);
 		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"));
 		launcher.update();
 		prefs.exportSubtree(new FileOutputStream(preferencesFile));
@@ -134,21 +134,20 @@ public class Launcher {
 		}
 	}
 
-	private static void checkSelfUpdate() {
+	private static void checkSelfUpdate(File preferencesFile) {
 		GithubAPI api = new GithubAPI("MonsterDruide1", "TAS-Editor-Launcher");
 		try {
 			JSONObject latest = api.getLatestRelease();
 			int id = latest.getInt("id");
 			if (id != Preferences.userRoot().node(Launcher.class.getName()).getInt("launcherID", 0)) {
-				selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id);
+				selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id, preferencesFile);
 			}
-		} catch (JSONException | IOException | URISyntaxException e) {
+		} catch (JSONException | IOException | URISyntaxException | BackingStoreException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void selfUpdate(String fileURL, int id)
-			throws MalformedURLException, IOException, URISyntaxException {
+	private static void selfUpdate(String fileURL, int id, File preferencesFile) throws MalformedURLException, IOException, URISyntaxException, BackingStoreException {
 		downloadUpdate(fileURL, new File("bin/Launcher-update.jar"));
 		File ownFileFile = new File(
 				Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
@@ -160,6 +159,7 @@ public class Launcher {
 		writer.flush();
 		writer.close();
 		Preferences.userRoot().node(Launcher.class.getName()).putInt("launcherID", id);
+		prefs.exportSubtree(new FileOutputStream(preferencesFile));
 		System.exit(3); // request update from underlying batch file
 	}
 
@@ -300,8 +300,7 @@ public class Launcher {
 	}
 
 	public static void downloadUpdate(String url, File toFile) throws MalformedURLException, IOException {
-		Files.copy(new URL(url).openStream(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING); // TODO show
-																										// progress
+		Files.copy(new URL(url).openStream(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING); // TODO show progress
 	}
 
 	public File getEditorFile() {
