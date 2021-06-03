@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -27,8 +28,15 @@ import org.json.JSONObject;
 
 public class Launcher {
 
+	public static final String batFileID = "v0";
+	
 	public static void main(String[] args) {
-		System.out.println("newer version");
+		if(args.length == 0 || !args[0].equals(batFileID)) { //is used if the bat should be updated
+			writeLauncherBat();
+			JOptionPane.showMessageDialog(new JFrame(), "Please restart the launcher using the bat file!");
+			return;
+		}
+		
 		File updaterScript = new File("Launcher-updater.bat");
 		if(updaterScript.exists()) updaterScript.delete(); //clean up file from self-update
 		
@@ -36,6 +44,18 @@ public class Launcher {
 		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"), Preferences.userRoot().node(Launcher.class.getName()));
 		launcher.update();
 		launcher.launch();
+	}
+	
+	private static void writeLauncherBat() {
+		try {
+			PrintWriter pw = new PrintWriter(new File("Launcher.bat"));
+			pw.write("@ECHO OFF\n");
+			pw.write("start \"TAS-Editor-Launcher\" /MIN cmd /c \"java -jar Launcher.jar "+batFileID+" & if ERRORLEVEL 3 call Launcher-updater.bat\"");
+			pw.flush();
+			pw.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private static void checkSelfUpdate() {
