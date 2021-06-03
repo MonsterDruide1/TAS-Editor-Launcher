@@ -43,7 +43,7 @@ public class Launcher {
 		if (updaterScript.exists())
 			updaterScript.delete(); // clean up file from self-update
 
-		checkSelfUpdate(); // FIXME absolutely not tested yet
+		checkSelfUpdate();
 		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"),
 				Preferences.userRoot().node(Launcher.class.getName()));
 		launcher.update();
