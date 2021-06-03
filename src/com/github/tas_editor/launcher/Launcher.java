@@ -31,6 +31,7 @@ public class Launcher {
 		System.out.println("new version");
 		File updaterScript = new File("Launcher-updater.bat");
 		if(updaterScript.exists()) updaterScript.delete(); //clean up file from self-update
+		
 		checkSelfUpdate(); //FIXME absolutely not tested yet
 		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"), Preferences.userRoot().node(Launcher.class.getName()));
 		launcher.update();
@@ -43,14 +44,14 @@ public class Launcher {
 			JSONObject latest = api.getLatestRelease();
 			int id = latest.getInt("id");
 			if(id != Preferences.userRoot().node(Launcher.class.getName()).getInt("launcherID", 0)) {
-				selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"));
+				selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id);
 			}
 		} catch (JSONException | IOException | URISyntaxException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private static void selfUpdate(String fileURL) throws MalformedURLException, IOException, URISyntaxException {
+	private static void selfUpdate(String fileURL, int id) throws MalformedURLException, IOException, URISyntaxException {
 		downloadUpdate(fileURL, new File("Launcher-update.jar"));
 		File ownFileFile = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 		String ownFile = ownFileFile.getName();
@@ -60,9 +61,9 @@ public class Launcher {
 		writer.write("java -jar \""+ownFile+"\""); //start the file up again
 		writer.flush();
 		writer.close();
+		Preferences.userRoot().node(Launcher.class.getName()).putInt("launcherID", id);
 		ProcessBuilder builder = new ProcessBuilder("cmd", "/C", "Launcher-updater.bat");
 		builder.start();
-		System.exit(0); //force exit if taskkill didn't do that yet
 	}
 	
 	private GithubAPI api;
