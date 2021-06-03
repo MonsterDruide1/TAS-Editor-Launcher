@@ -34,12 +34,12 @@ import org.json.JSONObject;
 
 public class Launcher {
 
-	public static final String batFileID = "v0";
+	public static final String batFileID = "v1";
 	
 	private static Preferences prefs;
 
 	public static void main(String[] args) throws FileNotFoundException, IOException, InvalidPreferencesFormatException, BackingStoreException {
-		File preferencesFile = new File("../config/launcher.xml").getAbsoluteFile();
+		File preferencesFile = new File("config/launcher.xml").getAbsoluteFile();
 		if(preferencesFile.exists())
 			Preferences.importPreferences(new FileInputStream(preferencesFile));
 		
@@ -73,8 +73,8 @@ public class Launcher {
 		}
 		
 		if(prefs.getBoolean("justInstalled", false)) { //clean up original file
-			File possibleLocation1 = new File("../Launcher.jar");
-			File possibleLocation2 = new File("../../Launcher.jar");
+			File possibleLocation1 = new File("Launcher.jar");
+			File possibleLocation2 = new File("../Launcher.jar");
 			if(possibleLocation1.exists())
 				possibleLocation1.delete();
 			else if(possibleLocation2.exists())
@@ -88,7 +88,7 @@ public class Launcher {
 		}
 		
 		if (!args[0].equals(batFileID)) { // is used if the bat should be updated
-			writeLauncherBat(new File("../Launcher.bat"));
+			writeLauncherBat(new File("Launcher.bat"));
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
 			return;
@@ -96,7 +96,7 @@ public class Launcher {
 		System.err.println("PLEASE DO NOT CLOSE THIS WINDOW - it is required to detect crashes of the TAS-Editor!");
 		System.err.println("-------------------------------------------------------------------------------------");
 
-		File updaterScript = new File("Launcher-updater.bat");
+		File updaterScript = new File("bin/Launcher-updater.bat");
 		if (updaterScript.exists())
 			updaterScript.delete(); // clean up file from self-update
 
@@ -123,8 +123,8 @@ public class Launcher {
 		try {
 			PrintWriter pw = new PrintWriter(file);
 			pw.write("@ECHO OFF\n");
-			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"cd bin & java -jar Launcher.jar " + batFileID
-					+ " & if ERRORLEVEL 3 call Launcher-updater.bat\"");
+			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"java -jar bin/Launcher.jar " + batFileID
+					+ " & if ERRORLEVEL 3 call bin/Launcher-updater.bat\"");
 			pw.flush();
 			pw.close();
 		} catch (IOException e) {
@@ -147,11 +147,11 @@ public class Launcher {
 
 	private static void selfUpdate(String fileURL, int id)
 			throws MalformedURLException, IOException, URISyntaxException {
-		downloadUpdate(fileURL, new File("Launcher-update.jar"));
+		downloadUpdate(fileURL, new File("bin/Launcher-update.jar"));
 		File ownFileFile = new File(
 				Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 		String ownFile = ownFileFile.getName();
-		PrintWriter writer = new PrintWriter(new File("Launcher-updater.bat"));
+		PrintWriter writer = new PrintWriter(new File("bin/Launcher-updater.bat"));
 		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar file
 		writer.write("move Launcher-update.jar \"" + ownFile + "\"\n"); // replace this jar file
 		writer.write("call Launcher.bat"); // start the file up again
