@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
@@ -29,12 +30,39 @@ import org.json.JSONObject;
 public class Launcher {
 
 	public static final String batFileID = "v0";
+	
+	private static Preferences prefs;
 
 	public static void main(String[] args) {
-		if (args.length == 0 || !args[0].equals(batFileID)) { // is used if the bat should be updated
-			writeLauncherBat();
+		prefs = Preferences.userRoot().node(Launcher.class.getName());
+		if(args.length == 0) { //first start or just didn't start using the bat
+			if(!prefs.getBoolean("installed", false)) { //first start -> install
+				try {
+					File ownFile = new File(
+							Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+					File installDir = ownFile.getParentFile();
+					if(installDir.list().length != 1) { //not in its own directory
+						installDir = new File(installDir+"/TAS-Editor");
+						installDir.mkdirs();
+					}
+					new File(installDir+"/bin").mkdirs();
+					Files.copy(ownFile.toPath(), Paths.get(installDir+"/bin/Launcher.jar"), StandardCopyOption.REPLACE_EXISTING);
+					new File(installDir+"/log").mkdirs();
+					writeLauncherBat(new File(installDir+"/Launcher.bat"));
+				} catch (URISyntaxException | IOException e) {
+					e.printStackTrace();
+				}
+			}
 			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
+			return;
+		}
+		
+		if (!args[0].equals(batFileID)) { // is used if the bat should be updated
+			writeLauncherBat(new File("Launcher.bat"));
+			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
+			System.exit(0);
+			return;
 		}
 		System.err.println("PLEASE DO NOT CLOSE THIS WINDOW - it is required to detect crashes of the TAS-Editor!");
 		System.err.println("-------------------------------------------------------------------------------------");
@@ -44,8 +72,7 @@ public class Launcher {
 			updaterScript.delete(); // clean up file from self-update
 
 		checkSelfUpdate();
-		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"),
-				Preferences.userRoot().node(Launcher.class.getName()));
+		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"));
 		launcher.update();
 		launcher.launch();
 	}
@@ -62,9 +89,9 @@ public class Launcher {
 		frame.dispose();
 	}
 
-	private static void writeLauncherBat() {
+	private static void writeLauncherBat(File file) {
 		try {
-			PrintWriter pw = new PrintWriter(new File("Launcher.bat"));
+			PrintWriter pw = new PrintWriter(file);
 			pw.write("@ECHO OFF\n");
 			pw.write("start \"TAS-Editor-Launcher - DO NOT CLOSE THIS WINDOW\" /MIN cmd /c \"java -jar Launcher.jar " + batFileID
 					+ " & if ERRORLEVEL 3 call Launcher-updater.bat\"");
@@ -95,8 +122,7 @@ public class Launcher {
 				Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 		String ownFile = ownFileFile.getName();
 		PrintWriter writer = new PrintWriter(new File("Launcher-updater.bat"));
-		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar
-																					// file
+		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar file
 		writer.write("move Launcher-update.jar \"" + ownFile + "\"\n"); // replace this jar file
 		writer.write("call Launcher.bat"); // start the file up again
 		writer.flush();
@@ -106,11 +132,9 @@ public class Launcher {
 	}
 
 	private GithubAPI api;
-	private Preferences prefs;
 
-	public Launcher(GithubAPI api, Preferences prefs) {
+	public Launcher(GithubAPI api) {
 		this.api = api;
-		this.prefs = prefs;
 	}
 
 	public void update() {
@@ -176,8 +200,7 @@ public class Launcher {
 		} while (id != startID);
 		changelogs.remove(changelogs.size()-1); //remove last, as it's the changelog for the already-installed version
 
-		// changelogs are now ordered new-to-old, meaning the most actual changelogs are
-		// in index 0
+		// changelogs are now ordered new-to-old, meaning the most actual changelogs are in index 0
 
 		ArrayList<ChangelogEntry> changelogEntries = new ArrayList<>();
 		for (String changelog : changelogs) {
@@ -197,7 +220,7 @@ public class Launcher {
 			builder.redirectErrorStream(true);
 			builder.redirectOutput(getLogFile());
 			Process process = builder.start();
-			if (process.waitFor() != 3) {
+			if (process.waitFor() != 0) {
 				showCrashLog();
 			}
 		} catch (IOException | InterruptedException e) {
