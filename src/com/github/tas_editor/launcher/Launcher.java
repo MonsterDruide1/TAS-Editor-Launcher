@@ -153,7 +153,7 @@ public class Launcher {
 			builder.redirectErrorStream(true);
 			builder.redirectOutput(getLogFile());
 			Process process = builder.start();
-			if(process.waitFor() != 0) {
+			if(process.waitFor() != 3) {
  				showCrashLog();
 			}
 		} catch (IOException | InterruptedException e) {
