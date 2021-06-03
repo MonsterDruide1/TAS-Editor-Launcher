@@ -4,6 +4,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
@@ -13,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -33,7 +38,11 @@ public class Launcher {
 	
 	private static Preferences prefs;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, IOException, InvalidPreferencesFormatException, BackingStoreException {
+		File preferencesFile = new File("../config/launcher.xml");
+		if(preferencesFile.exists())
+			Preferences.importPreferences(new FileInputStream(preferencesFile));
+		
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if(args.length == 0) { //first start or just didn't start using the bat
 			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)) { //first start -> install
@@ -50,6 +59,9 @@ public class Launcher {
 					new File(installDir+"/log").mkdirs();
 					writeLauncherBat(new File(installDir+"/Launcher.bat"));
 					prefs.putBoolean("justInstalled", true);
+					preferencesFile = new File(installDir+"/config/launcher.xml");
+					preferencesFile.createNewFile();
+					prefs.exportSubtree(new FileOutputStream(preferencesFile));
 				} catch (URISyntaxException | IOException e) {
 					e.printStackTrace();
 				}
@@ -71,6 +83,7 @@ public class Launcher {
 				
 			prefs.remove("justInstalled");
 			prefs.putBoolean("installed", true);
+			prefs.exportSubtree(new FileOutputStream(preferencesFile));
 		}
 		
 		if (!args[0].equals(batFileID)) { // is used if the bat should be updated
@@ -89,6 +102,7 @@ public class Launcher {
 		checkSelfUpdate();
 		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"));
 		launcher.update();
+		prefs.exportSubtree(new FileOutputStream(preferencesFile));
 		launcher.launch();
 	}
 
