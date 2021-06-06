@@ -38,7 +38,7 @@ public class Launcher {
 	
 	private static Preferences prefs;
 
-	public static void main(String[] args) throws FileNotFoundException, IOException, InvalidPreferencesFormatException, BackingStoreException {
+	public static void main(String[] args) throws FileNotFoundException, IOException, InvalidPreferencesFormatException, BackingStoreException, URISyntaxException {
 		File preferencesFile = new File("config/launcher.xml").getAbsoluteFile();
 		if(preferencesFile.exists())
 			Preferences.importPreferences(new FileInputStream(preferencesFile));
@@ -47,11 +47,10 @@ public class Launcher {
 		
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if(args.length == 0) { //first start or just didn't start using the bat
-			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)) { //first start -> install
+			File ownFile = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false) && !ownFile.getParent().equals("bin")) { //first start -> install
 				System.out.println("First start! Creating file structure...");
 				try {
-					File ownFile = new File(
-							Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 					File installDir = ownFile.getParentFile();
 					if(installDir.list().length != 1) { //not in its own directory
 						installDir = new File(installDir+"/TAS-Editor");
@@ -67,7 +66,7 @@ public class Launcher {
 					preferencesFile.createNewFile();
 					Runtime.getRuntime().exec("explorer.exe \""+installDir.toString()+"\"");
 					prefs.exportSubtree(new FileOutputStream(preferencesFile));
-				} catch (URISyntaxException | IOException e) {
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 				System.out.println("Done installing!");
