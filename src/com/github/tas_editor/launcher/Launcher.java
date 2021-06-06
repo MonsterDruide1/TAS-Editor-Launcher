@@ -177,12 +177,12 @@ public class Launcher {
 		this.api = api;
 	}
 
-	public void update() {
-		try {
-			JSONObject latestRelease = api.getLatestRelease();
-			int localID = prefs.getInt("latestID", 0);
-			if (localID != latestRelease.getInt("id") || !getEditorFile().exists()) {
-				System.out.println("Update for TAS-Editor available! Generating Changelog...");
+	public void update() throws MalformedURLException, JSONException, IOException {
+		JSONObject latestRelease = api.getLatestRelease();
+		int localID = prefs.getInt("latestID", 0);
+		if (localID != latestRelease.getInt("id") || !getEditorFile().exists()) {
+			System.out.println("Update for TAS-Editor available! Checking validity...");
+			if(latestRelease.has("assets") && latestRelease.getJSONArray("assets").length() > 0 && latestRelease.getJSONArray("assets").getJSONObject(0).has("browser_download_url")) {
 				if(localID != 0) {
 					String changelog = generateChangelog(localID);
 					displayChangelog(changelog);
@@ -192,11 +192,9 @@ public class Launcher {
 						getEditorFile());
 				prefs.putInt("latestID", latestRelease.getInt("id"));
 			}
-
-			System.out.println("Up to date!");
-		} catch (JSONException | IOException e) {
-			e.printStackTrace();
 		}
+
+		System.out.println("Up to date!");
 	}
 
 	public void displayChangelog(String changelog) { // TODO improve layout
