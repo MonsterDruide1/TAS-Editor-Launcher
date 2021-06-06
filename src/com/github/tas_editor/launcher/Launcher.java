@@ -24,6 +24,8 @@ import org.json.JSONObject;
 public class Launcher {
 
 	public static final String batFileID = "v1";
+	private static final GithubAPI launcherAPI = new GithubAPI("MonsterDruide1", "TAS-Editor-Launcher");
+	private static final GithubAPI editorAPI = new GithubAPI("MonsterDruide1", "TAS-editor");
 	
 	private static Preferences prefs;
 
@@ -93,10 +95,9 @@ public class Launcher {
 			updaterScript.delete(); // clean up file from self-update
 
 		checkSelfUpdate(preferencesFile);
-		Launcher launcher = new Launcher(new GithubAPI("MonsterDruide1", "TAS-editor"));
-		launcher.update();
+		update();
 		prefs.exportSubtree(new FileOutputStream(preferencesFile));
-		launcher.launch();
+		launch();
 	}
 
 	private static void writeLauncherBat(File file) {
@@ -113,9 +114,8 @@ public class Launcher {
 	}
 
 	private static void checkSelfUpdate(File preferencesFile) {
-		GithubAPI api = new GithubAPI("MonsterDruide1", "TAS-Editor-Launcher");
 		try {
-			JSONObject latest = api.getLatestRelease();
+			JSONObject latest = launcherAPI.getLatestRelease();
 			int id = latest.getInt("id");
 			if (id != Preferences.userRoot().node(Launcher.class.getName()).getInt("launcherID", 0)) {
 				System.out.println("Performing selfUpdate...");
@@ -132,7 +132,6 @@ public class Launcher {
 		File ownFileFile = Util.getOwnFile();
 		String ownFile = ownFileFile.getName();
 		PrintWriter writer = new PrintWriter(new File("bin/Launcher-updater.bat"));
-		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar file
 		writer.write("move /Y \""+ownFileFile.getParentFile().getAbsolutePath()+"\\Launcher-update.jar\" \""+ownFileFile.getParentFile().getAbsolutePath()+"\\" + ownFile + "\"\n"); // replace this jar file
 		writer.write("call Launcher.bat"); // start the file up again
 		writer.flush();
@@ -143,14 +142,8 @@ public class Launcher {
 		System.exit(3); // request update from underlying batch file
 	}
 
-	private GithubAPI api;
-
-	public Launcher(GithubAPI api) {
-		this.api = api;
-	}
-
-	public void update() throws MalformedURLException, JSONException, IOException {
-		JSONObject latestRelease = api.getLatestRelease();
+	public static void update() throws MalformedURLException, JSONException, IOException {
+		JSONObject latestRelease = editorAPI.getLatestRelease();
 		int localID = prefs.getInt("latestID", 0);
 		if (localID != latestRelease.getInt("id") || !getEditorFile().exists()) {
 			System.out.println("Update for TAS-Editor available! Checking validity...");
@@ -169,7 +162,7 @@ public class Launcher {
 		System.out.println("Up to date!");
 	}
 
-	public String generateChangelog(int startID) throws JSONException, IOException {
+	public static String generateChangelog(int startID) throws JSONException, IOException {
 		if (startID == 0) // first start -> download current release without changelog
 			return "";
 
@@ -177,7 +170,7 @@ public class Launcher {
 		int id;
 		int page = 1;
 		do {
-			JSONObject release = api.getReleases(page++, 1).getJSONObject(0);
+			JSONObject release = editorAPI.getReleases(page++, 1).getJSONObject(0);
 			changelogs.add(release.getString("body"));
 			id = release.getInt("id");
 		} while (id != startID);
@@ -196,11 +189,10 @@ public class Launcher {
 		return changelogEntries.stream().map(ChangelogEntry::toString).collect(Collectors.joining("\r\n"));
 	}
 
-	public void launch() {
+	public static void launch() {
 		try {
 			System.out.println("Launching TAS-Editor...");
 			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/C", "java -jar " + getEditorFile().toString());
-			builder.directory(new File(System.getProperty("user.dir")));
 			builder.redirectErrorStream(true);
 			builder.redirectOutput(getLogFile());
 			Process process = builder.start();
@@ -218,11 +210,11 @@ public class Launcher {
 		Files.copy(new URL(url).openStream(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING); // TODO show progress
 	}
 
-	public File getEditorFile() {
+	public static File getEditorFile() {
 		return new File(prefs.get("EditorPath", "bin/TAS-Editor.jar"));
 	}
 
-	public File getLogFile() {
+	public static File getLogFile() {
 		return new File(prefs.get("logfile", "log/log.txt"));
 	}
 
