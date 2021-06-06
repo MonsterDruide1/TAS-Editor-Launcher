@@ -183,8 +183,10 @@ public class Launcher {
 			int localID = prefs.getInt("latestID", 0);
 			if (localID != latestRelease.getInt("id") || !getEditorFile().exists()) {
 				System.out.println("Update for TAS-Editor available! Generating Changelog...");
-				String changelog = generateChangelog(localID);
-				displayChangelog(changelog);
+				if(localID != 0) {
+					String changelog = generateChangelog(localID);
+					displayChangelog(changelog);
+				}
 				System.out.println("Downloading update...");
 				downloadUpdate(latestRelease.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"),
 						getEditorFile());
