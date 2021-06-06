@@ -1,8 +1,5 @@
 package com.github.tas_editor.launcher;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,14 +17,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.ScrollPaneConstants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,31 +36,27 @@ public class Launcher {
 		
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if(args.length == 0) { //first start or just didn't start using the bat 
-			File ownFile = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+			File ownFile = Util.getOwnFile();
 			if(!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false) && !ownFile.getParentFile().getName().equals("bin")) { //first start -> install
 				System.out.println("First start! Creating file structure...");
-				try {
-					File installDir = ownFile.getParentFile();
-					if(installDir.list().length != 1) { //not in its own directory
-						installDir = new File(installDir+"/TAS-Editor");
-						installDir.mkdirs();
-					}
-					new File(installDir+"/bin").mkdirs();
-					Files.copy(ownFile.toPath(), Paths.get(installDir+"/bin/Launcher.jar"), StandardCopyOption.REPLACE_EXISTING);
-					new File(installDir+"/log").mkdirs();
-					writeLauncherBat(new File(installDir+"/Launcher.bat"));
-					prefs.putBoolean("justInstalled", true);
-					new File(installDir+"/config").mkdirs();
-					preferencesFile = new File(installDir+"/config/launcher.xml");
-					preferencesFile.createNewFile();
-					Runtime.getRuntime().exec("explorer.exe \""+installDir.toString()+"\"");
-					prefs.exportSubtree(new FileOutputStream(preferencesFile));
-				} catch (IOException e) {
-					e.printStackTrace();
+				File installDir = ownFile.getParentFile();
+				if(installDir.list().length != 1) { //not in its own directory
+					installDir = new File(installDir+"/TAS-Editor");
+					installDir.mkdirs();
 				}
+				new File(installDir+"/bin").mkdirs();
+				Files.copy(ownFile.toPath(), Paths.get(installDir+"/bin/Launcher.jar"), StandardCopyOption.REPLACE_EXISTING);
+				new File(installDir+"/log").mkdirs();
+				writeLauncherBat(new File(installDir+"/Launcher.bat"));
+				prefs.putBoolean("justInstalled", true);
+				new File(installDir+"/config").mkdirs();
+				preferencesFile = new File(installDir+"/config/launcher.xml");
+				preferencesFile.createNewFile();
+				Runtime.getRuntime().exec("explorer.exe \""+installDir.toString()+"\"");
+				prefs.exportSubtree(new FileOutputStream(preferencesFile));
 				System.out.println("Done installing!");
 			}
-			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
+			UI.showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
 			return;
 		}
@@ -85,7 +70,7 @@ public class Launcher {
 			else if(possibleLocation2.exists())
 				possibleLocation2.delete();
 			else
-				showMessageDialog("Could not locate original installation file. As the Launcher is fully installed, it is not required anymore, please delete it.", "Could not delete original file");
+				UI.showMessageDialog("Could not locate original installation file. As the Launcher is fully installed, it is not required anymore, please delete it.", "Could not delete original file");
 				
 			prefs.remove("justInstalled");
 			prefs.putBoolean("installed", true);
@@ -96,7 +81,7 @@ public class Launcher {
 		if (!args[0].equals(batFileID)) { // is used if the bat should be updated
 			System.out.println("Update the bat file...");
 			writeLauncherBat(new File("Launcher.bat"));
-			showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
+			UI.showMessageDialog("Please restart the launcher using the bat file!", "Restart using bat");
 			System.exit(0);
 			return;
 		}
@@ -112,18 +97,6 @@ public class Launcher {
 		launcher.update();
 		prefs.exportSubtree(new FileOutputStream(preferencesFile));
 		launcher.launch();
-	}
-
-	private static void showMessageDialog(String message, String title) {
-		JFrame frame = new JFrame(title);
-
-		frame.setUndecorated(true);
-		frame.setVisible(true);
-		frame.setLocationRelativeTo(null);
-
-		JOptionPane.showMessageDialog(frame, message, title, JOptionPane.WARNING_MESSAGE);
-
-		frame.dispose();
 	}
 
 	private static void writeLauncherBat(File file) {
@@ -156,8 +129,7 @@ public class Launcher {
 	private static void selfUpdate(String fileURL, int id, File preferencesFile) throws MalformedURLException, IOException, URISyntaxException, BackingStoreException {
 		downloadUpdate(fileURL, new File("bin/Launcher-update.jar"));
 		System.out.println("Done downloading Launcher-update file. Writing updater script...");
-		File ownFileFile = new File(
-				Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+		File ownFileFile = Util.getOwnFile();
 		String ownFile = ownFileFile.getName();
 		PrintWriter writer = new PrintWriter(new File("bin/Launcher-updater.bat"));
 		writer.write("taskkill /F /PID " + ProcessHandle.current().pid() + "\n"); // kill this process to modify the jar file
@@ -165,7 +137,7 @@ public class Launcher {
 		writer.write("call Launcher.bat"); // start the file up again
 		writer.flush();
 		writer.close();
-		Preferences.userRoot().node(Launcher.class.getName()).putInt("launcherID", id);
+		prefs.putInt("launcherID", id);
 		prefs.exportSubtree(new FileOutputStream(preferencesFile));
 		System.out.println("Done. Restarting...");
 		System.exit(3); // request update from underlying batch file
@@ -185,7 +157,7 @@ public class Launcher {
 			if(latestRelease.has("assets") && latestRelease.getJSONArray("assets").length() > 0 && latestRelease.getJSONArray("assets").getJSONObject(0).has("browser_download_url")) {
 				if(localID != 0) {
 					String changelog = generateChangelog(localID);
-					displayChangelog(changelog);
+					UI.displayChangelog(changelog);
 				}
 				System.out.println("Downloading update...");
 				downloadUpdate(latestRelease.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"),
@@ -195,37 +167,6 @@ public class Launcher {
 		}
 
 		System.out.println("Up to date!");
-	}
-
-	public void displayChangelog(String changelog) { // TODO improve layout
-		JFrame frame = new JFrame();
-
-		JPanel panel = new JPanel(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.insets = new Insets(10, 10, 10, 10);
-
-		JLabel crash = new JLabel("Update available! Changelog:");
-		crash.setFont(crash.getFont().deriveFont(25f));
-		panel.add(crash, c);
-
-		c.weighty = 1;
-		c.gridy = 1;
-		JTextArea area = new JTextArea(changelog);
-		area.setLineWrap(true);
-		area.setWrapStyleWord(true);
-		area.setEditable(false);
-		JScrollPane pane = new JScrollPane(area);
-		pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		panel.add(pane, c);
-
-		frame.add(panel);
-		frame.setTitle("Changelog");
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frame.setVisible(true);
 	}
 
 	public String generateChangelog(int startID) throws JSONException, IOException {
@@ -265,51 +206,12 @@ public class Launcher {
 			Process process = builder.start();
 			System.out.println("Done! Waiting for crash/exit...");
 			if (process.waitFor() != 0) {
-				showCrashLog();
+				UI.showCrashLog(getLogFile());
 			}
 			System.out.println("Exiting...");
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public void showCrashLog() throws IOException {
-		String log = Files.readString(getLogFile().toPath());
-
-		JFrame frame = new JFrame();
-
-		JPanel panel = new JPanel(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.insets = new Insets(10, 10, 10, 10);
-
-		JLabel crash = new JLabel("Uh oh, looks like TAS-Editor crashed...");
-		crash.setFont(crash.getFont().deriveFont(25f));
-		panel.add(crash, c);
-
-		c.gridy = 1;
-		JLabel submitLog = new JLabel(
-				"<html>Please submit the following log file to Jadefalke2 or MonsterDruide1 on the SMO-TAS Discord!<br/>"
-						+ "It can also be found at " + getLogFile().toString() + ".</html>");
-		panel.add(submitLog, c);
-
-		c.weighty = 1;
-		c.gridy = 2;
-		JTextArea area = new JTextArea(log);
-		area.setLineWrap(true);
-		area.setWrapStyleWord(true);
-		area.setEditable(false);
-		JScrollPane pane = new JScrollPane(area);
-		pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		panel.add(pane, c);
-
-		frame.add(panel);
-		frame.setTitle("TAS-Editor crashed!");
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frame.setVisible(true);
 	}
 
 	public static void downloadUpdate(String url, File toFile) throws MalformedURLException, IOException {
