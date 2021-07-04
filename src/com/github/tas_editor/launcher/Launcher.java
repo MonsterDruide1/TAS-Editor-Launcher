@@ -42,10 +42,12 @@ public class Launcher {
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if (args.length == 0) { // first start or just didn't start using the bat
 			File ownFile = Util.getOwnFile();
+			System.out.println("own: "+ownFile);
 			if (!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)
 					&& !ownFile.getParentFile().getName().equals("bin")) { // first start -> install
 				System.out.println("First start! Creating file structure...");
 				File installDir = ownFile.getParentFile();
+				System.out.println("install: "+installDir);
 				if (installDir.list().length != 1) { // not in its own directory
 					installDir = new File(installDir + "/TAS-Editor");
 					installDir.mkdirs();
