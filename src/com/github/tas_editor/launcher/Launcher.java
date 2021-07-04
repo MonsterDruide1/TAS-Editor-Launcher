@@ -27,11 +27,13 @@ public class Launcher {
 	private static final GithubAPI launcherAPI = new GithubAPI("MonsterDruide1", "TAS-Editor-Launcher");
 	private static final GithubAPI editorAPI = new GithubAPI("MonsterDruide1", "TAS-editor");
 
+	// TODO custom implementation of Preferences?
 	private static Preferences prefs;
+	private static File preferencesFile;
 
 	public static void main(String[] args) throws FileNotFoundException, IOException, InvalidPreferencesFormatException,
 			BackingStoreException, URISyntaxException, InterruptedException {
-		File preferencesFile = new File("config/launcher.xml").getAbsoluteFile();
+		preferencesFile = new File("config/launcher.xml").getAbsoluteFile();
 		if (preferencesFile.exists())
 			Preferences.importPreferences(new FileInputStream(preferencesFile));
 		else
@@ -99,7 +101,7 @@ public class Launcher {
 		if (updaterScript.exists())
 			updaterScript.delete(); // clean up file from self-update
 
-		checkSelfUpdate(preferencesFile);
+		checkSelfUpdate();
 		update();
 		prefs.exportSubtree(new FileOutputStream(preferencesFile));
 		launch();
@@ -114,18 +116,16 @@ public class Launcher {
 		pw.close();
 	}
 
-	private static void checkSelfUpdate(File preferencesFile)
-			throws JSONException, IOException, URISyntaxException, BackingStoreException {
+	private static void checkSelfUpdate() throws JSONException, IOException, URISyntaxException, BackingStoreException {
 		JSONObject latest = launcherAPI.getLatestRelease();
 		int id = latest.getInt("id");
 		if (id != Preferences.userRoot().node(Launcher.class.getName()).getInt("launcherID", 0)) {
 			System.out.println("Performing selfUpdate...");
-			selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id,
-					preferencesFile);
+			selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id);
 		}
 	}
 
-	private static void selfUpdate(String fileURL, int id, File preferencesFile)
+	private static void selfUpdate(String fileURL, int id)
 			throws MalformedURLException, IOException, URISyntaxException, BackingStoreException {
 		downloadUpdate(fileURL, new File("bin/Launcher-update.jar"));
 		System.out.println("Done downloading Launcher-update file. Writing updater script...");
