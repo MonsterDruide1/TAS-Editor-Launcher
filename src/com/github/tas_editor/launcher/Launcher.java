@@ -27,11 +27,13 @@ public class Launcher {
 	private static final GithubAPI launcherAPI = new GithubAPI("Jadefalke2", "TAS-Editor-Launcher");
 	private static final GithubAPI editorAPI = new GithubAPI("Jadefalke2", "TAS-Editor");
 
+	// TODO custom implementation of Preferences?
 	private static Preferences prefs;
+	private static File preferencesFile;
 
 	public static void main(String[] args) throws FileNotFoundException, IOException, InvalidPreferencesFormatException,
 			BackingStoreException, URISyntaxException, InterruptedException {
-		File preferencesFile = new File("config/launcher.xml").getAbsoluteFile();
+		preferencesFile = new File("config/launcher.xml").getAbsoluteFile();
 		if (preferencesFile.exists())
 			Preferences.importPreferences(new FileInputStream(preferencesFile));
 		else
@@ -40,10 +42,12 @@ public class Launcher {
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if (args.length == 0) { // first start or just didn't start using the bat
 			File ownFile = Util.getOwnFile();
+			System.out.println("own: "+ownFile);
 			if (!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)
 					&& !ownFile.getParentFile().getName().equals("bin")) { // first start -> install
 				System.out.println("First start! Creating file structure...");
 				File installDir = ownFile.getParentFile();
+				System.out.println("install: "+installDir);
 				if (installDir.list().length != 1) { // not in its own directory
 					installDir = new File(installDir + "/TAS-Editor");
 					installDir.mkdirs();
@@ -99,7 +103,7 @@ public class Launcher {
 		if (updaterScript.exists())
 			updaterScript.delete(); // clean up file from self-update
 
-		checkSelfUpdate(preferencesFile);
+		checkSelfUpdate();
 		update();
 		prefs.exportSubtree(new FileOutputStream(preferencesFile));
 		launch();
@@ -114,18 +118,16 @@ public class Launcher {
 		pw.close();
 	}
 
-	private static void checkSelfUpdate(File preferencesFile)
-			throws JSONException, IOException, URISyntaxException, BackingStoreException {
+	private static void checkSelfUpdate() throws JSONException, IOException, URISyntaxException, BackingStoreException {
 		JSONObject latest = launcherAPI.getLatestRelease();
 		int id = latest.getInt("id");
 		if (id != Preferences.userRoot().node(Launcher.class.getName()).getInt("launcherID", 0)) {
 			System.out.println("Performing selfUpdate...");
-			selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id,
-					preferencesFile);
+			selfUpdate(latest.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"), id);
 		}
 	}
 
-	private static void selfUpdate(String fileURL, int id, File preferencesFile)
+	private static void selfUpdate(String fileURL, int id)
 			throws MalformedURLException, IOException, URISyntaxException, BackingStoreException {
 		downloadUpdate(fileURL, new File("bin/Launcher-update.jar"));
 		System.out.println("Done downloading Launcher-update file. Writing updater script...");
