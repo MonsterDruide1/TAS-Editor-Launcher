@@ -25,7 +25,7 @@ public class Launcher {
 
 	public static final String batFileID = "v1";
 	private static final GithubAPI launcherAPI = new GithubAPI("MonsterDruide1", "TAS-Editor-Launcher");
-	private static final GithubAPI editorAPI = new GithubAPI("MonsterDruide1", "TAS-editor");
+	private static final GithubAPI editorAPI = new GithubAPI("MonsterDruide1", "TAS-Editor");
 
 	// TODO custom implementation of Preferences?
 	private static Preferences prefs;
