@@ -77,7 +77,7 @@ public class UI {
 
 		c.gridy = 1;
 		JLabel submitLog = new JLabel(
-				"<html>Please submit the following log file to Jadefalke2 or MonsterDruide1 on the SMO-TAS Discord!<br/>"
+				"<html>Please submit the following log file to MonsterDruide1 on the SMO-TAS Discord!<br/>"
 						+ "It can also be found at " + logFile.toString() + ".</html>");
 		panel.add(submitLog, c);
 
