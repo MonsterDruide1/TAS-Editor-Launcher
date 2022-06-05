@@ -42,7 +42,6 @@ public class Launcher {
 		prefs = Preferences.userRoot().node(Launcher.class.getName());
 		if (args.length == 0) { // first start or just didn't start using the bat
 			File ownFile = Util.getOwnFile();
-			System.out.println("own: "+ownFile);
 			if (!prefs.getBoolean("installed", false) && !prefs.getBoolean("justInstalled", false)
 					&& !ownFile.getParentFile().getName().equals("bin")) { // first start -> install
 				System.out.println("First start! Creating file structure...");
